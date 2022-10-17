@@ -4,8 +4,13 @@ datasource db {
 }
 
 generator client {
-    provider      = "prisma-client-js"
-    binaryTargets = ["debian-openssl-1.1.x"]
+    provider = "prisma-client-js"
+}
+
+model Terry {
+    id     String @id @default(auto()) @map("_id") @db.ObjectId
+    userId String
+    type   String
 }
 
 model Account {
@@ -21,8 +26,7 @@ model Account {
     scope             String?
     id_token          String? @db.String
     session_state     String?
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
 }
@@ -60,39 +64,39 @@ model VerificationToken {
 }
 
 model Conversation {
-    id                      String                    @id @default(auto()) @map("_id") @db.ObjectId
-    messages                Message[]
-    ConversationParticipant ConversationParticipant[]
-    timeCreated             DateTime                  @default(now())
-    timeUpdated             DateTime                  @updatedAt
-    users                   User[]
-    latestMessageId         String                    @unique
-    latestMessage           Message?                  @relation(name: "latestConversationMessage", fields: [latestMessageId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+    id              String                    @id @default(auto()) @map("_id") @db.ObjectId
+    messages        Message[]
+    participants    ConversationParticipant[]
+    timeCreated     DateTime                  @default(now())
+    timeUpdated     DateTime                  @updatedAt
+    users           User[]
+    latestMessageId String?                   @unique
+    latestMessage   Message?                  @relation(name: "latestConversationMessage", fields: [latestMessageId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
 
 model ConversationParticipant {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-
-    userId String
-    user   User   @relation(fields: [userId], references: [id])
-
-    conversationId String
-    conversation   Conversation @relation(fields: [conversationId], references: [id])
-
+    id                   String       @id @default(auto()) @map("_id") @db.ObjectId
+    userId               String
+    user                 User         @relation(fields: [userId], references: [id])
+    conversationId       String
+    conversation         Conversation @relation(fields: [conversationId], references: [id])
     hasSeenLatestMessage Boolean
+    timeCreated          DateTime     @default(now())
+    timeUpdated          DateTime     @updatedAt
 }
 
 model Message {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-
+    id             String        @id @default(auto()) @map("_id") @db.ObjectId
     conversationId String
-    conversation   Conversation @relation(fields: [conversationId], references: [id])
+    conversation   Conversation  @relation(fields: [conversationId], references: [id])
+    senderId       String
+    sender         User          @relation(fields: [senderId], references: [id])
+    isLatestIn     Conversation? @relation("latestConversationMessage")
+    timeCreated    DateTime      @default(now())
+    timeUpdated    DateTime      @updatedAt
+}
 
-    senderId String
-    sender   User   @relation(fields: [senderId], references: [id])
-
-    isLatestIn Conversation? @relation("latestConversationMessage")
-
-    timeCreated DateTime @default(now())
-    timeUpdated DateTime @updatedAt
+model Test {
+    id   String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
 }
