@@ -7,6 +7,7 @@ import conversationOps from "../../../graphQL/ops/conversation"
 import { useQuery } from "@apollo/client"
 import { ConversationsData } from "../../../utils/types"
 import { ConversationPopulated } from "../../../../../backend/src/utils/types"
+import { useRouter } from "next/router"
 
 interface Props {
   session: Session
@@ -22,7 +23,21 @@ const ConversationsWrapper: React.FC<Props> = ({ session }) => {
     subscribeToMore,
   } = useQuery<ConversationsData, null>(conversationOps.Queries.conversations)
 
+  const router = useRouter()
+  const {
+    query: { conversationId },
+  } = router
+
   console.log("query data", conversationsData)
+
+  const onViewConversation = async (conversationId: string) => {
+    // update url with conversationId using next router
+    router.push({ query: { conversationId } })
+
+    // mark the conversation as read
+  }
+
+  console.log(onViewConversation)
 
   // https://www.apollographql.com/docs/react/data/subscriptions/#subscribing-to-updates-for-a-query
   const subscribeToNewConversations = () => {
@@ -58,11 +73,18 @@ const ConversationsWrapper: React.FC<Props> = ({ session }) => {
   }, [])
 
   return (
-    <Box width={{ base: "100%", md: "400px" }} bg="whiteAlpha.50" py={6} px={3}>
+    <Box
+      width={{ base: "100%", md: "400px" }}
+      bg="whiteAlpha.50"
+      py={6}
+      px={3}
+      display={{ base: conversationId ? "none" : "flex", md: "flex" }}
+    >
       {/* Skell loader */}
       <ConversationList
         session={session}
         conversations={conversationsData?.conversations || []}
+        onViewConversation={onViewConversation}
       />
     </Box>
   )
