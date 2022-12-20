@@ -1,5 +1,5 @@
 import { CreateUsernameResponse, GraphQLContext } from "../../utils/types"
-import { ApolloError } from "apollo-server-express"
+import { GraphQLError } from "graphql"
 import { User } from "@prisma/client"
 
 const resolvers = {
@@ -13,7 +13,7 @@ const resolvers = {
       const { session, prisma } = context
 
       if (!session?.user) {
-        throw new ApolloError("Not authorised")
+        throw new GraphQLError("Not authorised")
       }
 
       const {
@@ -36,7 +36,7 @@ const resolvers = {
         return users
       } catch (error: any) {
         console.log("search user error", error)
-        throw new ApolloError(error?.message)
+        throw new GraphQLError(error?.message)
       }
     },
   },
